@@ -1,5 +1,13 @@
 .venv/
-data/
+
 *.env
 __pycache__/
 *.pyc
+
+# Data — ignorar contenido pero no archivos .dvc
+data/raw/
+data/annotated/
+data/processed/
+!data/annotated.dvc
+!data/raw.dvc
+!data/processed.dvc
