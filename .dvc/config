@@ -1,2 +1,5 @@
 [core]
     autostage = true
+    remote = nas
+['remote "nas"']
+    url = /mnt/nas-dev/ml-extraction/annotated
