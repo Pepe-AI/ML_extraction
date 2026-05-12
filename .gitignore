@@ -11,3 +11,8 @@ data/processed/
 !data/annotated.dvc
 !data/raw.dvc
 !data/processed.dvc
+
+# Archivos sensibles — nunca subir
+docker/.env
+docker/label-studio-internal.env
+*.env
