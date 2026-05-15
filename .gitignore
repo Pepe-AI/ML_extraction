@@ -16,3 +16,7 @@ data/processed/
 docker/.env
 docker/label-studio-internal.env
 *.env
+
+.claude/
+spec_schema_v1.md
+guia_prompts_claude_code.md
