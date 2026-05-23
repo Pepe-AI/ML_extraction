@@ -7,7 +7,7 @@ donde se permite string vacío (""), por ser nota libre del anotador.
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # ── Enums ────────────────────────────────────────────────────────────────
@@ -54,3 +54,20 @@ class Evidence(BaseModel):
         if v.strip() == "":
             raise ValueError("source_text no puede ser vacío después de strip()")
         return v
+
+
+class Section(BaseModel):
+    """Sección identificada dentro de la escritura notarial."""
+    section_norm: SectionEnum
+    raw_title: str = Field(min_length=1)
+    page_start: int = Field(ge=1)
+    page_end: int = Field(ge=1)
+    evidence: list[Evidence] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def page_end_gte_page_start(self) -> "Section":
+        if self.page_end < self.page_start:
+            raise ValueError(
+                f"page_end ({self.page_end}) debe ser >= page_start ({self.page_start})"
+            )
+        return self
