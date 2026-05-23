@@ -5,7 +5,7 @@ donde se permite string vacío (""), por ser nota libre del anotador.
 """
 
 from enum import Enum
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -38,6 +38,8 @@ class CurrencyEnum(str, Enum):
 
 StrOrNA = str | Literal["NA"]
 
+T = TypeVar("T")
+
 
 # ── Modelos base ─────────────────────────────────────────────────────────
 
@@ -69,5 +71,32 @@ class Section(BaseModel):
         if self.page_end < self.page_start:
             raise ValueError(
                 f"page_end ({self.page_end}) debe ser >= page_start ({self.page_start})"
+            )
+        return self
+
+
+class FieldWithEvidence(BaseModel, Generic[T]):
+    """Campo de datos con su evidencia textual de respaldo."""
+    value: T
+    evidence: list[Evidence]
+
+    @field_validator("value", mode="before")
+    @classmethod
+    def reject_empty_string(cls, v: object) -> object:
+        if isinstance(v, str) and v.strip() == "":
+            raise ValueError(
+                "value no puede ser string vacío. Usa 'NA' o null."
+            )
+        return v
+
+    @model_validator(mode="after")
+    def value_evidence_coherence(self) -> "FieldWithEvidence[T]":
+        if self.value is None and self.evidence:
+            raise ValueError(
+                "evidence debe ser [] cuando value es null"
+            )
+        if self.value is not None and not self.evidence:
+            raise ValueError(
+                "evidence no puede ser [] cuando value tiene un valor"
             )
         return self
