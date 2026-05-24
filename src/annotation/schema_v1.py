@@ -100,3 +100,49 @@ class FieldWithEvidence(BaseModel, Generic[T]):
                 "evidence no puede ser [] cuando value tiene un valor"
             )
         return self
+
+
+class Representative(BaseModel):
+    """Representante legal de una entidad (titular o adquiriente)."""
+    id: str = Field(pattern=r"^(T|A)\d+_R\d+$")
+    nombre: FieldWithEvidence[StrOrNA]
+    actua_por: FieldWithEvidence[StrOrNA]
+    en_calidad: FieldWithEvidence[StrOrNA]
+    poder_escritura: FieldWithEvidence[StrOrNA]
+    fecha_poder: FieldWithEvidence[StrOrNA]
+
+
+class Entity(BaseModel):
+    """Persona física o moral que participa en la operación (titular o adquiriente)."""
+    id: str = Field(pattern=r"^(T|A)\d+$")
+    nombre: FieldWithEvidence[StrOrNA]
+    tipo: FieldWithEvidence[TipoEnum]
+    estado_civil: FieldWithEvidence[str | None]
+    tipo_sociedad: FieldWithEvidence[str | None]
+    edad: FieldWithEvidence[int | None]
+    rfc: FieldWithEvidence[str | None]
+    curp: FieldWithEvidence[str | None]
+    representantes: list[Representative]
+    entity_flags: list[str]
+
+    @field_validator("edad", mode="after")
+    @classmethod
+    def edad_no_negativa(
+        cls, v: "FieldWithEvidence[int | None]"
+    ) -> "FieldWithEvidence[int | None]":
+        if v.value is not None and v.value < 0:
+            raise ValueError(f"edad debe ser >= 0, se recibió {v.value}")
+        return v
+
+    @model_validator(mode="after")
+    def moral_requiere_representante_o_flag(self) -> "Entity":
+        if self.tipo.value == "MORAL":
+            tiene_rep = len(self.representantes) >= 1
+            tiene_flag = "MORAL_SIN_REPRESENTANTE_ENCONTRADO" in self.entity_flags
+            if not (tiene_rep or tiene_flag):
+                raise ValueError(
+                    f"Entity '{self.id}' con tipo=MORAL requiere al menos un "
+                    f"representante o el flag 'MORAL_SIN_REPRESENTANTE_ENCONTRADO' "
+                    f"en entity_flags"
+                )
+        return self
