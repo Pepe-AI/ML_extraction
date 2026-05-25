@@ -186,3 +186,59 @@ class DocumentFields(BaseModel):
                     "Usa value='NA' si no se encontró."
                 )
         return self
+
+
+# Campos obligatorios del documento (admiten "NA" + qa_flag, no admiten null).
+_CAMPOS_OBLIGATORIOS_DOC: tuple[str, ...] = (
+    "numero_escritura",
+    "fecha_documento",
+    "numero_notaria",
+    "nombre_notario",
+    "municipio",
+)
+
+
+class AnnotationV1(BaseModel):
+    """Anotación completa de una escritura de compra-venta (raíz del schema v1).
+
+    Nota: `observaciones` es el único campo del schema donde se permite
+    string vacío (""), por ser nota libre del anotador (no es campo de datos).
+    """
+    schema_version: Literal["v1"]
+    preprocess_version: str = Field(
+        pattern=r"^preprocess@([a-f0-9]{7,40}|uncommitted)$"
+    )
+    doc_id: str = Field(min_length=1)
+    file_name: str = Field(min_length=1)
+    annotator: str = Field(min_length=1)
+    labeled_at: str
+    observaciones: str
+    qa_flags: list[str]
+    sections: list[Section] = Field(min_length=1)
+    fields: DocumentFields
+    titulares: list[Entity] = Field(min_length=1)
+    adquirientes: list[Entity] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def qa_flag_monto_operacion(self) -> "AnnotationV1":
+        monto = self.fields.monto_operacion
+        if monto is not None and monto.value == "NA":
+            if "NA:monto_operacion" not in self.qa_flags:
+                raise ValueError(
+                    "monto_operacion.value='NA' requiere 'NA:monto_operacion' "
+                    "en qa_flags"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def qa_flags_campos_obligatorios(self) -> "AnnotationV1":
+        faltantes: list[str] = []
+        for campo in _CAMPOS_OBLIGATORIOS_DOC:
+            field_obj = getattr(self.fields, campo)
+            if field_obj.value == "NA" and f"NA:{campo}" not in self.qa_flags:
+                faltantes.append(f"NA:{campo}")
+        if faltantes:
+            raise ValueError(
+                f"Faltan qa_flags para campos en 'NA': {faltantes}"
+            )
+        return self
