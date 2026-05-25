@@ -146,3 +146,43 @@ class Entity(BaseModel):
                     f"en entity_flags"
                 )
         return self
+
+
+class MontoOperacion(BaseModel):
+    """Monto monetario de la operación con su moneda y evidencia."""
+    value: float | Literal["NA"]
+    currency: CurrencyEnum
+    evidence: list[Evidence] = Field(min_length=1)
+
+    @field_validator("value", mode="after")
+    @classmethod
+    def value_no_negativo(cls, v: float | Literal["NA"]) -> float | Literal["NA"]:
+        if isinstance(v, float) and v < 0:
+            raise ValueError(f"monto_operacion.value debe ser >= 0, se recibió {v}")
+        return v
+
+
+class DocumentFields(BaseModel):
+    """Campos extraídos del documento (escritura)."""
+    numero_escritura: FieldWithEvidence[StrOrNA]
+    fecha_documento: FieldWithEvidence[StrOrNA]
+    valor_catastral_bool: FieldWithEvidence[bool]
+    monto_operacion: MontoOperacion | None
+    numero_notaria: FieldWithEvidence[StrOrNA]
+    nombre_notario: FieldWithEvidence[StrOrNA]
+    municipio: FieldWithEvidence[StrOrNA]
+
+    @model_validator(mode="after")
+    def coherencia_valor_catastral_monto(self) -> "DocumentFields":
+        if self.valor_catastral_bool.value is False:
+            if self.monto_operacion is not None:
+                raise ValueError(
+                    "Si valor_catastral_bool=False, monto_operacion debe ser null."
+                )
+        if self.valor_catastral_bool.value is True:
+            if self.monto_operacion is None:
+                raise ValueError(
+                    "Si valor_catastral_bool=True, monto_operacion no puede ser null. "
+                    "Usa value='NA' si no se encontró."
+                )
+        return self
