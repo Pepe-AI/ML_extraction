@@ -4,6 +4,8 @@ Excepción documentada: el campo `observaciones` en AnnotationV1 es el único
 donde se permite string vacío (""), por ser nota libre del anotador.
 """
 
+import re
+from datetime import datetime
 from enum import Enum
 from typing import Generic, Literal, TypeVar
 
@@ -41,6 +43,35 @@ StrOrNA = str | Literal["NA"]
 T = TypeVar("T")
 
 
+# ── Helpers ──────────────────────────────────────────────────────────────
+
+DATE_REGEX = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def validar_fecha_estricta(valor: object, permite_na: bool = True) -> object:
+    """Valida que `valor` cumpla formato YYYY-MM-DD y sea fecha calendario real.
+
+    Si `permite_na` y `valor == 'NA'`, pasa sin tocar. No intenta parsear
+    formatos en español; rechaza con ValueError explicativo.
+    """
+    if valor == "NA" and permite_na:
+        return valor
+    if not isinstance(valor, str):
+        raise ValueError(
+            f"Fecha debe ser string, no {type(valor).__name__}"
+        )
+    if not DATE_REGEX.match(valor):
+        raise ValueError(
+            f"Fecha '{valor}' no cumple formato YYYY-MM-DD. "
+            "Convierte manualmente antes de capturar."
+        )
+    try:
+        datetime.strptime(valor, "%Y-%m-%d")
+    except ValueError as e:
+        raise ValueError(f"Fecha '{valor}' no es calendario válido: {e}")
+    return valor
+
+
 # ── Modelos base ─────────────────────────────────────────────────────────
 
 class Evidence(BaseModel):
@@ -49,6 +80,13 @@ class Evidence(BaseModel):
     page: int = Field(ge=1)
     lines: str = Field(pattern=r"^\d+(-\d+)?$")
     source_text: str = Field(min_length=1, max_length=160)
+
+    @field_validator("section_norm", mode="before")
+    @classmethod
+    def normalizar_section_norm(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.strip().upper()
+        return v
 
     @field_validator("source_text")
     @classmethod
@@ -65,6 +103,13 @@ class Section(BaseModel):
     page_start: int = Field(ge=1)
     page_end: int = Field(ge=1)
     evidence: list[Evidence] = Field(min_length=1)
+
+    @field_validator("section_norm", mode="before")
+    @classmethod
+    def normalizar_section_norm(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.strip().upper()
+        return v
 
     @model_validator(mode="after")
     def page_end_gte_page_start(self) -> "Section":
@@ -111,6 +156,13 @@ class Representative(BaseModel):
     poder_escritura: FieldWithEvidence[StrOrNA]
     fecha_poder: FieldWithEvidence[StrOrNA]
 
+    @field_validator("fecha_poder", mode="before")
+    @classmethod
+    def validar_fecha_poder(cls, v: object) -> object:
+        if isinstance(v, dict) and "value" in v:
+            v = {**v, "value": validar_fecha_estricta(v["value"], permite_na=True)}
+        return v
+
 
 class Entity(BaseModel):
     """Persona física o moral que participa en la operación (titular o adquiriente)."""
@@ -124,6 +176,21 @@ class Entity(BaseModel):
     curp: FieldWithEvidence[str | None]
     representantes: list[Representative]
     entity_flags: list[str]
+
+    @field_validator("tipo", mode="before")
+    @classmethod
+    def normalizar_tipo(cls, v: object) -> object:
+        if isinstance(v, dict) and isinstance(v.get("value"), str):
+            v = {**v, "value": v["value"].strip().upper()}
+        return v
+
+    @field_validator("rfc", "curp", mode="before")
+    @classmethod
+    def normalizar_rfc_curp(cls, v: object) -> object:
+        if isinstance(v, dict) and isinstance(v.get("value"), str):
+            normalizado = v["value"].upper().replace(" ", "").replace("-", "")
+            v = {**v, "value": normalizado}
+        return v
 
     @field_validator("edad", mode="after")
     @classmethod
@@ -154,6 +221,21 @@ class MontoOperacion(BaseModel):
     currency: CurrencyEnum
     evidence: list[Evidence] = Field(min_length=1)
 
+    @field_validator("value", mode="before")
+    @classmethod
+    def redondear_value(cls, v: object) -> object:
+        # bool es subclase de int en Python — excluirlo explícitamente
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            return round(float(v), 2)
+        return v
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def normalizar_currency(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.strip().upper()
+        return v
+
     @field_validator("value", mode="after")
     @classmethod
     def value_no_negativo(cls, v: float | Literal["NA"]) -> float | Literal["NA"]:
@@ -171,6 +253,13 @@ class DocumentFields(BaseModel):
     numero_notaria: FieldWithEvidence[StrOrNA]
     nombre_notario: FieldWithEvidence[StrOrNA]
     municipio: FieldWithEvidence[StrOrNA]
+
+    @field_validator("fecha_documento", mode="before")
+    @classmethod
+    def validar_fecha_documento(cls, v: object) -> object:
+        if isinstance(v, dict) and "value" in v:
+            v = {**v, "value": validar_fecha_estricta(v["value"], permite_na=True)}
+        return v
 
     @model_validator(mode="after")
     def coherencia_valor_catastral_monto(self) -> "DocumentFields":
@@ -218,6 +307,11 @@ class AnnotationV1(BaseModel):
     fields: DocumentFields
     titulares: list[Entity] = Field(min_length=1)
     adquirientes: list[Entity] = Field(min_length=1)
+
+    @field_validator("labeled_at", mode="before")
+    @classmethod
+    def validar_labeled_at(cls, v: object) -> object:
+        return validar_fecha_estricta(v, permite_na=False)
 
     @model_validator(mode="after")
     def qa_flag_monto_operacion(self) -> "AnnotationV1":
