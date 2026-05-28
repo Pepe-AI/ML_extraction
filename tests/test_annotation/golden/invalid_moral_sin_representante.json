@@ -1,0 +1,88 @@
+{
+  "schema_version": "v1",
+  "preprocess_version": "preprocess@a3f8b21",
+  "doc_id": "ESC_INV_002",
+  "file_name": "invalid_moral_sin_representante.pdf",
+  "annotator": "ana.lopez",
+  "labeled_at": "2026-03-15",
+  "observaciones": "",
+  "qa_flags": [],
+  "sections": [
+    {
+      "section_norm": "PERSONALIDAD",
+      "raw_title": "PERSONALIDAD",
+      "page_start": 1,
+      "page_end": 1,
+      "evidence": [
+        {"section_norm": "PERSONALIDAD", "page": 1, "lines": "1", "source_text": "PERSONALIDAD"}
+      ]
+    }
+  ],
+  "fields": {
+    "numero_escritura": {"value": "111", "evidence": [
+      {"section_norm": "PERSONALIDAD", "page": 1, "lines": "5", "source_text": "CIENTO ONCE"}
+    ]},
+    "fecha_documento": {"value": "2023-05-15", "evidence": [
+      {"section_norm": "PERSONALIDAD", "page": 1, "lines": "8", "source_text": "fecha"}
+    ]},
+    "valor_catastral_bool": {"value": true, "evidence": [
+      {"section_norm": "CLAUSULAS", "page": 2, "lines": "45", "source_text": "precio"}
+    ]},
+    "monto_operacion": {
+      "value": 5000.00,
+      "currency": "MXN",
+      "evidence": [
+        {"section_norm": "CLAUSULAS", "page": 2, "lines": "46", "source_text": "$5,000"}
+      ]
+    },
+    "numero_notaria": {"value": "1", "evidence": [
+      {"section_norm": "AUTORIZO", "page": 5, "lines": "200", "source_text": "NOTARIA UNO"}
+    ]},
+    "nombre_notario": {"value": "X", "evidence": [
+      {"section_norm": "AUTORIZO", "page": 5, "lines": "201", "source_text": "Notario"}
+    ]},
+    "municipio": {"value": "TEPIC", "evidence": [
+      {"section_norm": "CLAUSULAS", "page": 2, "lines": "50", "source_text": "Tepic"}
+    ]}
+  },
+  "titulares": [
+    {
+      "id": "T1",
+      "nombre": {"value": "INMOBILIARIA X S.A. DE C.V.", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "100", "source_text": "INMOBILIARIA X"}
+      ]},
+      "tipo": {"value": "MORAL", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "100", "source_text": "SA DE CV"}
+      ]},
+      "estado_civil": {"value": null, "evidence": []},
+      "tipo_sociedad": {"value": "SA DE CV", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "100", "source_text": "SA DE CV"}
+      ]},
+      "edad": {"value": null, "evidence": []},
+      "rfc": {"value": "INX800101AB1", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "101", "source_text": "RFC"}
+      ]},
+      "curp": {"value": null, "evidence": []},
+      "representantes": [],
+      "entity_flags": []
+    }
+  ],
+  "adquirientes": [
+    {
+      "id": "A1",
+      "nombre": {"value": "JUAN PEREZ", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "110", "source_text": "JUAN PEREZ"}
+      ]},
+      "tipo": {"value": "FISICA", "evidence": [
+        {"section_norm": "GENERALES", "page": 3, "lines": "110", "source_text": "mexicano"}
+      ]},
+      "estado_civil": {"value": null, "evidence": []},
+      "tipo_sociedad": {"value": null, "evidence": []},
+      "edad": {"value": null, "evidence": []},
+      "rfc": {"value": null, "evidence": []},
+      "curp": {"value": null, "evidence": []},
+      "representantes": [],
+      "entity_flags": []
+    }
+  ]
+}

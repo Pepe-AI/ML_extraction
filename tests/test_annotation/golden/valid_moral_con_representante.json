@@ -1,0 +1,155 @@
+{
+  "schema_version": "v1",
+  "preprocess_version": "preprocess@a3f8b21",
+  "doc_id": "ESC_002",
+  "file_name": "escritura_002.pdf",
+  "annotator": "ana.lopez",
+  "labeled_at": "2026-03-16",
+  "observaciones": "",
+  "qa_flags": [],
+  "sections": [
+    {
+      "section_norm": "PERSONALIDAD",
+      "raw_title": "PERSONALIDAD",
+      "page_start": 1,
+      "page_end": 2,
+      "evidence": [
+        {"section_norm": "PERSONALIDAD", "page": 1, "lines": "1-5", "source_text": "PERSONALIDAD"}
+      ]
+    }
+  ],
+  "fields": {
+    "numero_escritura": {
+      "value": "2307",
+      "evidence": [
+        {"section_norm": "PERSONALIDAD", "page": 1, "lines": "5",
+         "source_text": "ESCRITURA NUMERO DOS MIL TRESCIENTOS SIETE"}
+      ]
+    },
+    "fecha_documento": {
+      "value": "2023-05-05",
+      "evidence": [
+        {"section_norm": "PERSONALIDAD", "page": 1, "lines": "8",
+         "source_text": "a cinco de mayo de dos mil veintitrés"}
+      ]
+    },
+    "valor_catastral_bool": {
+      "value": true,
+      "evidence": [
+        {"section_norm": "CLAUSULAS", "page": 3, "lines": "60",
+         "source_text": "el precio de la operación asciende a"}
+      ]
+    },
+    "monto_operacion": {
+      "value": 8654.00,
+      "currency": "MXN",
+      "evidence": [
+        {"section_norm": "CLAUSULAS", "page": 3, "lines": "61",
+         "source_text": "$8,654.00 MN (OCHO MIL SEISCIENTOS CINCUENTA Y CUATRO PESOS)"}
+      ]
+    },
+    "numero_notaria": {
+      "value": "35",
+      "evidence": [
+        {"section_norm": "AUTORIZO", "page": 6, "lines": "250",
+         "source_text": "NOTARIA PUBLICA NUMERO TREINTA Y CINCO"}
+      ]
+    },
+    "nombre_notario": {
+      "value": "RIGOBERTO OCHOA TORRES",
+      "evidence": [
+        {"section_norm": "AUTORIZO", "page": 6, "lines": "251",
+         "source_text": "Lic. Rigoberto Ochoa Torres, Notario Público"}
+      ]
+    },
+    "municipio": {
+      "value": "TEPIC, NAYARIT",
+      "evidence": [
+        {"section_norm": "CLAUSULAS", "page": 3, "lines": "65",
+         "source_text": "ubicado en el municipio de Tepic, Nayarit"}
+      ]
+    }
+  },
+  "titulares": [
+    {
+      "id": "T1",
+      "nombre": {"value": "INMOBILIARIA X S.A. DE C.V.", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "120",
+         "source_text": "INMOBILIARIA X SOCIEDAD ANONIMA DE CAPITAL VARIABLE"}
+      ]},
+      "tipo": {"value": "MORAL", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "120",
+         "source_text": "SOCIEDAD ANONIMA DE CAPITAL VARIABLE"}
+      ]},
+      "estado_civil": {"value": null, "evidence": []},
+      "tipo_sociedad": {"value": "SOCIEDAD ANONIMA DE CV", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "120",
+         "source_text": "SOCIEDAD ANONIMA DE CAPITAL VARIABLE"}
+      ]},
+      "edad": {"value": null, "evidence": []},
+      "rfc": {"value": "INX800101AB1", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "121",
+         "source_text": "RFC: INX800101AB1"}
+      ]},
+      "curp": {"value": null, "evidence": []},
+      "representantes": [
+        {
+          "id": "T1_R1",
+          "nombre": {"value": "JUAN PEREZ LOPEZ", "evidence": [
+            {"section_norm": "PERSONALIDAD", "page": 2, "lines": "30",
+             "source_text": "JUAN PEREZ LOPEZ, apoderado legal"}
+          ]},
+          "actua_por": {"value": "INMOBILIARIA X S.A. DE C.V.", "evidence": [
+            {"section_norm": "PERSONALIDAD", "page": 2, "lines": "31",
+             "source_text": "en representación de INMOBILIARIA X S.A. DE C.V."}
+          ]},
+          "en_calidad": {"value": "APODERADO LEGAL", "evidence": [
+            {"section_norm": "PERSONALIDAD", "page": 2, "lines": "32",
+             "source_text": "en su calidad de apoderado legal"}
+          ]},
+          "poder_escritura": {"value": "63", "evidence": [
+            {"section_norm": "PERSONALIDAD", "page": 2, "lines": "33",
+             "source_text": "escritura número sesenta y tres"}
+          ]},
+          "fecha_poder": {"value": "2020-04-15", "evidence": [
+            {"section_norm": "PERSONALIDAD", "page": 2, "lines": "34",
+             "source_text": "de fecha quince de abril de dos mil veinte"}
+          ]}
+        }
+      ],
+      "entity_flags": []
+    }
+  ],
+  "adquirientes": [
+    {
+      "id": "A1",
+      "nombre": {"value": "JOSE PEREZ SANCHEZ", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "150",
+         "source_text": "JOSE PEREZ SANCHEZ, mexicano, mayor de edad"}
+      ]},
+      "tipo": {"value": "FISICA", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "150",
+         "source_text": "mexicano, mayor de edad"}
+      ]},
+      "estado_civil": {"value": "CASADO", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "151",
+         "source_text": "casado bajo el régimen de sociedad conyugal"}
+      ]},
+      "tipo_sociedad": {"value": null, "evidence": []},
+      "edad": {"value": 38, "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "151",
+         "source_text": "de treinta y ocho años de edad"}
+      ]},
+      "rfc": {"value": "PESJ850515ABC", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "152",
+         "source_text": "RFC: PESJ850515ABC"}
+      ]},
+      "curp": {"value": "PESJ850515HNTRZN08", "evidence": [
+        {"section_norm": "GENERALES", "page": 4, "lines": "153",
+         "source_text": "CURP: PESJ850515HNTRZN08"}
+      ]},
+      "representantes": [],
+      "entity_flags": []
+    }
+  ]
+}
