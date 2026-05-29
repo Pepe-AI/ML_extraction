@@ -1,11 +1,21 @@
 """Tests para src.annotation.schema_v1."""
 import json
+import re
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from src.annotation import validate_annotation, AnnotationV1
+
+
+def _strip_json_strings(s: str) -> str:
+    """Reemplaza el contenido de cada string JSON por "" para inspección estructural.
+
+    Permite detectar ": " o ", " *fuera* de strings sin falsos positivos por
+    contenidos como "RFC: ABC" o "Pérez García, Notario".
+    """
+    return re.sub(r'"(?:[^"\\]|\\.)*"', '""', s)
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
 
@@ -167,3 +177,84 @@ def test_fecha_invalida_calendario():
     }
     with pytest.raises((ValidationError, ValueError)):
         validate_annotation(data)
+
+
+def test_curp_normalizacion():
+    """CURP en minúsculas o con espacios se normaliza a UPPER sin separadores."""
+    # 1. Minúsculas → mayúsculas
+    data = _annotation_dict()
+    data["adquirientes"][0]["curp"] = {
+        "value": "pesj850515hntrzn08",
+        "evidence": [{"section_norm": "GENERALES", "page": 1, "lines": "1", "source_text": "x"}],
+    }
+    result = validate_annotation(data)
+    assert result.adquirientes[0].curp.value == "PESJ850515HNTRZN08"
+
+    # 2. Con espacios → sin espacios
+    data2 = _annotation_dict()
+    data2["adquirientes"][0]["curp"] = {
+        "value": "PESJ 850515 HNTRZN08",
+        "evidence": [{"section_norm": "GENERALES", "page": 1, "lines": "1", "source_text": "x"}],
+    }
+    result2 = validate_annotation(data2)
+    assert result2.adquirientes[0].curp.value == "PESJ850515HNTRZN08"
+
+
+# ── Tests de serialización y round-trip ──────────────────────────────────
+
+def test_serializacion_compacta():
+    """El formato compacto usado para training no escapa UTF-8 ni añade espacios."""
+    data = json.loads(
+        (GOLDEN_DIR / "valid_fisica_simple.json").read_text(encoding="utf-8")
+    )
+    # Mutamos para incluir caracteres unicode "duros" (Ñ, É, México)
+    data["adquirientes"][0]["nombre"]["value"] = "JOSÉ MUÑOZ DE LA PEÑA"
+    data["fields"]["municipio"]["value"] = "CIUDAD DE MÉXICO"
+
+    result = validate_annotation(data)
+
+    # 1. Pydantic model_dump_json: debe ser válido y no escapar UTF-8
+    pyd_json = result.model_dump_json()
+    assert isinstance(pyd_json, str)
+    json.loads(pyd_json)  # debe re-parsear sin error
+    assert "JOSÉ MUÑOZ DE LA PEÑA" in pyd_json
+    assert "MÉXICO" in pyd_json
+    assert "\\u" not in pyd_json  # no escapes unicode
+
+    # 2. Formato compacto para training
+    compact = json.dumps(
+        result.model_dump(mode="json"),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    # 2a. Caracteres UTF-8 literales, no escapados
+    assert "JOSÉ MUÑOZ DE LA PEÑA" in compact
+    assert "MÉXICO" in compact
+    assert "Pérez" in compact   # acento del golden original
+    assert "años" in compact     # ñ del golden original
+    assert "\\u" not in compact
+
+    # 2b. Estructuralmente compacto: sin espacios después de ":" ni ","
+    #     (chequeado tras eliminar el contenido de los strings JSON).
+    structural = _strip_json_strings(compact)
+    assert ": " not in structural, "compact form tiene ': ' fuera de strings"
+    assert ", " not in structural, "compact form tiene ', ' fuera de strings"
+
+    # 2c. Versus la forma indentada: la compacta es estrictamente más corta
+    indented = json.dumps(
+        result.model_dump(mode="json"), ensure_ascii=False, indent=2
+    )
+    assert len(compact) < len(indented)
+
+
+def test_round_trip():
+    """Validar → dump → re-validar produce un objeto Pydantic equivalente."""
+    data = json.loads(
+        (GOLDEN_DIR / "valid_moral_con_representante.json").read_text(encoding="utf-8")
+    )
+    a = validate_annotation(data)
+    dumped = a.model_dump(mode="json")
+    b = validate_annotation(dumped)
+    assert a == b
+    # Y el round-trip es estable: dump(b) == dump(a)
+    assert b.model_dump(mode="json") == dumped
